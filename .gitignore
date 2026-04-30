@@ -1,6 +1,8 @@
 # Python-generated files
 **/__pycache__/
 *.py[oc]
+activate/
+activate.bat
 build/
 dist/
 wheels/
@@ -10,6 +12,7 @@ wheels/
 .venv
 
 # Project-specific directories
+chunks/
 vector_store_db/
 logs/
 uploaded_docs/
