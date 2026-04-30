@@ -1,6 +1,6 @@
 # -*- coding: gbk -*-
 from typing import Dict, Type, Any
-from rag_backend.embeding.factory import EmbeddingsFactory
+from rag_backend.embedding.factory import EmbeddingsFactory
 
 from .base import BaseVectorStore
 from .chroma import ChromaVectorStore
