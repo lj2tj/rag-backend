@@ -9,7 +9,7 @@ from rag_backend.util.api_helper import get_rag_chain
 class AskRequest(BaseModel):
     query: str
 
-def ask_question(request: AskRequest):
+async def ask_question(request: AskRequest):
     """Answers a question based on the knowledge base."""
     vector_store = VectorStoreFactory.create(collection_name="default")
     logger.info("Vector store loaded from disk.")

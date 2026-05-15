@@ -15,6 +15,29 @@ class DocumentChunker(ABC):
     def chunk(self, file_path: str, parsed_content: str) -> List[Dict[str, Any]]:
         pass
 
+    def _create_metadata(self, *, file_path: str, chunk_index: int, original_type: str,
+                        chunk_size: int, overlap: int, title: str = None) -> Dict[str, Any]:
+        """Create metadata dictionary for a chunk.
+        
+        Args:
+            file_path: the document file path
+            chunk_index: the index of current chunk in all chunks
+            original_type: the document file type, like: pdf, word
+            chunk_size: the max chunk size
+            overlap: the overlap size between two chunks
+            title: the chunk's title if have
+        """
+        import uuid
+        return {
+            "chunk_index": chunk_index,
+            "source": file_path,
+            "original_type": original_type,
+            "title": title if title else " - ",
+            "id": str(uuid.uuid4()),
+            'chunk_size': chunk_size,
+            'overlap': overlap
+        }
+
     def get_settings(self, ext: str) -> Dict[str, Any]:
         return settings.get_chunk_config(ext)
     
@@ -32,7 +55,15 @@ class DocumentChunker(ABC):
         pass
 
     def _split_long_text(self, text: str, chunk_size: int, overlap: int) -> List[str]:
-        """split long text by chunk_size"""
+        """split long text by chunk_size
+        
+        Args:
+            text: the document content
+            chunk_size: the max chunk size
+            overlap: the overlap size between two chunks
+        Returns:
+            a list of chunks
+        """
         text = text.strip()
         if not text:
             return []
@@ -58,7 +89,13 @@ class DocumentChunker(ABC):
         return chunks
 
     def _split_by_chapters(self, text: str) -> List[tuple]:
-        """split by contents"""
+        """split by chapters
+        
+        Args:
+            text: the document content
+        Returns:
+            a list of tuples, each tuple is (title, content)
+        """
         import re
         # ????????????1.1??2.4??10.8
         chapter_pattern = r'^\s*(\d+\.\d+)(\s|$)'

@@ -3,6 +3,7 @@ import json
 from posixpath import abspath
 from datetime import datetime
 import os
+from typing import Dict, Any
 
 from langchain_core.documents import Document
 
@@ -10,7 +11,6 @@ from rag_backend.vector_store.factory import VectorStoreFactory
 from rag_backend.config.settings import settings
 from rag_backend.parsers.factory import DocumentParserFactory
 from rag_backend.chunkers.factory import DocumentChunkerFactory
-from typing import Dict, Any
 
 from enums import EmbedStatus
 from logger import logger
