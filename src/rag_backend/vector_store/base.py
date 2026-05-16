@@ -25,7 +25,6 @@ class BaseVectorStore(ABC):
         pass
 
     @abstractmethod
-    def retriever(self, query: str, k: int = 3) -> List[Document]:
+    def similarity_search(self, query: str, k: int = 2) -> List[Document]:
         """Perform a similarity search on the vector store"""
         pass
-

@@ -4,11 +4,6 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 
 import uvicorn
-from rag_backend.util.api_helper import (
-    save_uploaded_file,
-    process_uploaded_file,
-    get_rag_chain
-)
 
 from api import upload_document, get_files, embed_document, ask_question, AskRequest
 
