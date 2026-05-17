@@ -14,7 +14,7 @@ from langchain.agents import create_agent
 from rag_backend.config.settings import settings
 from rag_backend.util.file_status_helper import FileStatusManager
 from rag_backend.util.file_helper import extract_archive, is_archive_file
-from rag_backend.vector_store.factory import VectorStoreFactory
+from rag_backend.vector_store.singleton import VectorStoreSingleton
 
 from enums import EmbedStatus
 from logger import logger
@@ -23,16 +23,16 @@ from logger import logger
 file_status_manager = FileStatusManager()
 llm = ChatOllama(model=settings.chat_model)
 
-# Construct a tool for retrieving context
+# Construct a tool for retrieving context from the vector store
 @tool(response_format="content_and_artifact")
 def retrieve_context(query: str):
     """Retrieve information to help answer a query."""
-    vector_store = VectorStoreFactory.create(collection_name="default")
+    vector_store = VectorStoreSingleton.get_instance(collection_name="default")
     logger.info("Vector store loaded from disk.")
     if vector_store is None:
         raise HTTPException(status_code=500, detail="No documents found in the knowledge base. Please upload some documents first.")
 
-    retrieved_docs = vector_store.similarity_search(query, k=2)
+    retrieved_docs = vector_store.similarity_search(query, k=3)
     serialized = "\n\n".join(
         (f"Source: {doc.metadata}\nContent: {doc.page_content}")
         for doc in retrieved_docs
@@ -88,6 +88,8 @@ def process_archive_file(file_obj, file_path: str, target_directory: str):
 
     return True, extracted_files_relative, None
 
+# agent 是一个智能体，用于处理用户的问题
+# 大模型根据需要调用工具
 def get_rag_agent():
     """Get or create RAG agent."""
     tools = [retrieve_context]
@@ -105,14 +107,21 @@ def get_rag_agent():
     agent = create_agent(llm, tools, system_prompt=prompt)
     return agent
 
-def get_rag_chain(vector_store_instance):
-    """Get or create RAG chain."""
+# chain 是一个固定的工作流
+def get_rag_chain():
+    """Get or create RAG chain using singleton vector store."""
     try:
-        retriever = vector_store_instance.as_retriever()
+        vector_store = VectorStoreSingleton.get_instance(collection_name="default")
+        retriever = vector_store.as_retriever()
     except Exception as e:
         logger.error(f"Failed to create retriever: {e}")
         raise
 
+    # rag_chain首先组装一个字典，包含context和question，
+    # context是检索到的文档，question是用户的问题
+    # 然后将context和question填充到prompt，
+    # 最后将组装好的prompt传递给大模型，
+    # 大模型使用StrOutputParser将重排后的结果转换为字符串
     rag_chain = (
         {"context": retriever | RunnableLambda(format_docs), "question": RunnablePassthrough()}
         | prompt

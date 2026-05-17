@@ -30,7 +30,6 @@ class ChromaVectorStore(BaseVectorStore):
     
     def as_retriever(self, **kwargs: Any) -> None:
         """Return a retriever interface"""
-        self.db.similarity_search("")
         logger.info("Loaded Chroma index for retrieval")
         return self.db.as_retriever(search_type="similarity", search_kwargs={"k": 3}, **kwargs)
     
